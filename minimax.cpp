@@ -217,7 +217,7 @@ double Getval(bool tp){//evaluate
 			if(X1<2)val-=abs(X1-2)*10;
 			if(X1>6)val-=abs(X1-6)*10;
 		}
-		if(10-Blocknum1<=4){
+		if(10-Blocknum1<=3){
 			if(ai_side==0){
 				int num=0;
 				for(int i=X1;i<8;i++)for(int j=0;j<8;j++)num+=H2[i][j];
