@@ -1,4 +1,3 @@
-// 4、6全胜 对5胜率极大 尽量和对面贴贴就能赢
 #include "AIController.h"
 #include <utility>
 #include<bits/stdc++.h>
@@ -216,12 +215,12 @@ double Getval(bool tp){//evaluate
 	double val;
 	if(tp==1){
 		val=(Dis2-Dis1);
-		if(Blocknum1_0>=1)val+=Blocknum1*0.4;
-		if(Blocknum2_0>=1)val-=Blocknum2*0.4;
+		if(Blocknum1_0>=1)val+=(Blocknum1-1)*0.5+0.5;
+		if(Blocknum2_0>=1)val-=(Blocknum2-1)*0.5+0.5;
 		// if(Blocknum1_0>=4&&Blocknum2_0>=4&&Blocknum2_0-Blocknum1_0>=2)val+=Blocknum1*0.2;
 
-		if(Blocknum2_0)val-=calc_edge(X1,Y1)*0.1;
-		if(Blocknum1_0)val+=calc_edge(X2,Y2)*0.05;
+		if(Blocknum2_0>=2)val-=calc_edge(X1,Y1)*0.1;
+		if(Blocknum1_0>=2)val+=calc_edge(X2,Y2)*0.1;
 
 		if(cycle<=3){
 			if(X1<3)val-=abs(X1-3)*10;

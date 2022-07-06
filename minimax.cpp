@@ -18,6 +18,7 @@ int H3[9][9];//H3 该点右下角不能被通过
 int Blocknum1,Blocknum2;//Blocknum1 我的剩余木板数；Blocknum2 对方的剩余木板数
 int X1,Y1,X2,Y2;//(X1,Y1) 我的位置；(X2,Y2) 对方的位置
 int cycle;
+int Blocknum1_0,Blocknum2_0;
 void init() {
 	/* Your code here */
 	for(int i=0;i<=8;i++)for(int j=0;j<8;j++)H1[i][j]=0;
@@ -181,7 +182,7 @@ int calc_edge(int x,int y){
 // 		}
 // 	}
 // }
-double Dis1,Dis2;
+double Dis1,Dis2,Dis3;
 int P1,P2;
 bool cmpquick;
 void GetDis(){
@@ -202,37 +203,50 @@ void GetDis(){
 		BFS(X2,Y2);
 		for(int i=0;i<=8;i++)Dis2=min(Dis2,dis[0][i]);
 		for(int i=0;i<=8;i++)if(Dis2==dis[0][i])P2=max(P2,p[0][i]);
+
+		Dis3=dis[X1][Y1];
 	}
 }
 double Getval(bool tp){//evaluate
+	
+	
 	if(isEnd())return isEnd()==1?inf-1:-(inf-1);
 	GetDis();
 	double val;
 	if(tp==1){
-		val=(Dis2-Dis1)+Blocknum1*0.05-Blocknum2*0.05;
-		if(Blocknum2)val-=calc_edge(X1,Y1)*0.1;
-		if(Blocknum1)val+=calc_edge(X2,Y2)*0.1;
-		// val+=min(P1/10.0,0.3)-min(P2/10.0,0.3);
-		if(cycle<=5){
-			if(X1<2)val-=abs(X1-2)*10;
-			if(X1>6)val-=abs(X1-6)*10;
+		val=(Dis2-Dis1);
+		if(Blocknum1_0>=1)val+=Blocknum1*0.5;
+		if(Blocknum2_0>=1)val-=Blocknum2*0.5;
+		// if(Blocknum1_0>=4&&Blocknum2_0>=4&&Blocknum2_0-Blocknum1_0>=2)val+=Blocknum1*0.2;
+
+		if(Blocknum2_0)val-=calc_edge(X1,Y1)*0.1;
+		if(Blocknum1_0)val+=calc_edge(X2,Y2)*0.05;
+
+		if(cycle<=3){
+			if(X1<3)val-=abs(X1-3)*10;
+			if(X1>5)val-=abs(X1-5)*10;
 		}
-		if(10-Blocknum1<=3){
+		if(10-Blocknum1_0<=2){
 			if(ai_side==0){
 				int num=0;
-				for(int i=X1;i<8;i++)for(int j=0;j<8;j++)num+=H2[i][j];
-				val+=num*0.2;
+				// for(int i=X1;i<8;i++)for(int j=0;j<8;j++)num+=H2[i][j];
+				for(int j=0;j<8;j++)num+=H2[6][j];
+				val+=num*0.3;
 			}
 			else {
 				int num=0;
-				for(int i=0;i<X1;i++)for(int j=0;j<8;j++)num+=H2[i][j];
-				val+=num*0.2;
+				// for(int i=0;i<X1;i++)for(int j=0;j<8;j++)num+=H2[i][j];
+				for(int j=0;j<8;j++)num+=H2[1][j];
+				val+=num*0.3;
 			}
 		}
-		// val+=(-Dis1)*0.3;
-		// val+=Dis2*0.5;
-		if(cmpquick)val+=(-Dis1)*0.3;
-		else val+=Dis2*0.3;
+		if(cycle<=10)val-=Dis3*0.3;
+		if(Blocknum1_0>=3){
+			// val+=(-Dis1)*0.3;
+			val+=Dis2*0.5;
+			// if(cmpquick)val+=(-Dis1)*0.3;
+			// else val+=Dis2*0.3;
+		}
 	}
 	else {
 		// val=Dis2-Dis1;
@@ -685,10 +699,22 @@ pp2 action(pp2 loc) {
 	cycle++;
 	update2(loc);
 
+	pp2 ans;
+
+	// bool flag=0;
+	// if(cycle==1&&ai_side==0){
+	// 	ans=pp2(0,pp(8,5)),flag=1;
+	// }
+	// if(flag){
+	// 	update1(ans);
+	// 	return ans;
+	// }
+
 	GetDis();
 	cmpquick=(Dis1<Dis2?1:0);
+	Blocknum1_0=Blocknum1,Blocknum2_0=Blocknum2;
 
-	pp2 ans;
+	
 	MiniMaxSearch(0,Blocknum1?3:1,inf+1,ans);
 	// cerr<<"!!!"<<ans.fi<<" "<<ans.se.fi<<" "<<ans.se.se<<endl;
 	update1(ans);
