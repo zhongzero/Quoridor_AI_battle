@@ -1,8 +1,8 @@
-// 4、6全胜 对5胜率极大 尽量和对面贴贴就能赢
 #include "AIController.h"
 #include <utility>
 #include<bits/stdc++.h>
 #include <unistd.h>
+#define Maxn 14000010
 using namespace std;
 #define pp pair<int,int>
 #define pp2 pair<int,pp>
@@ -20,6 +20,7 @@ int Blocknum1,Blocknum2;//Blocknum1 我的剩余木板数；Blocknum2 对方的�
 int X1,Y1,X2,Y2;//(X1,Y1) 我的位置；(X2,Y2) 对方的位置
 int cycle;
 int Blocknum1_0,Blocknum2_0;
+int cycle_0;
 void init() {
 	/* Your code here */
 	for(int i=0;i<=8;i++)for(int j=0;j<8;j++)H1[i][j]=0;
@@ -155,34 +156,6 @@ int calc_edge(int x,int y){
 	else return G;
 	// return min(2,G);
 }
-// void SPFA(int x0,int y0){
-// 	for(int i=0;i<9;i++)for(int j=0;j<9;j++)dis[i][j]=inf;
-// 	memset(vis,0,sizeof vis);
-// 	dis[x0][y0]=+calc_edge(x0,y0)*0.001;
-// 	W.push(pp(x0,y0));
-// 	while(!W.empty()){
-// 		int x=W.front().fi,y=W.front().se;
-// 		W.pop();
-// 		vis[x][y]=0;
-// 		double val=dis[x][y]+1+calc_edge(x,y)*0.001;
-// 		if(x-1>=0&&dis[x-1][y]>val&&!H2[x-1][y]){
-// 			dis[x-1][y]=val;
-// 			if(!vis[x-1][y])W.push(pp(x-1,y)),vis[x-1][y]=1;
-// 		}
-// 		if(x+1<=8&&dis[x+1][y]>val&&!H2[x][y]){
-// 			dis[x+1][y]=val;
-// 			if(!vis[x+1][y])W.push(pp(x+1,y)),vis[x+1][y]=1;
-// 		}
-// 		if(y-1>=0&&dis[x][y-1]>val&&!H1[x][y-1]){
-// 			dis[x][y-1]=val;
-// 			if(!vis[x][y-1])W.push(pp(x,y-1)),vis[x][y-1]=1;
-// 		}
-// 		if(y+1<=8&&dis[x][y+1]>val&&!H1[x][y]){
-// 			dis[x][y+1]=val;
-// 			if(!vis[x][y+1])W.push(pp(x,y+1)),vis[x][y+1]=1;
-// 		}
-// 	}
-// }
 double Dis1,Dis2,Dis3;
 int P1,P2;
 bool cmpquick;
@@ -196,6 +169,7 @@ void GetDis(){
 		BFS(X2,Y2);
 		for(int i=0;i<=8;i++)Dis2=min(Dis2,dis[8][i]);
 		for(int i=0;i<=8;i++)if(Dis2==dis[8][i])P2=max(P2,p[8][i]);
+		Dis3=dis[X1][Y1];
 	}
 	else {
 		BFS(X1,Y1);
@@ -204,10 +178,595 @@ void GetDis(){
 		BFS(X2,Y2);
 		for(int i=0;i<=8;i++)Dis2=min(Dis2,dis[0][i]);
 		for(int i=0;i<=8;i++)if(Dis2==dis[0][i])P2=max(P2,p[0][i]);
-
 		Dis3=dis[X1][Y1];
 	}
 }
+
+
+
+
+const double c=sqrt(2);
+vector<int>order[Maxn];
+int R[Maxn];
+vector<int>son[Maxn];//son[x][i]：x的第i个儿子 
+vector<double>P[Maxn];
+vector<pp2>op[Maxn];//op[x][i]：x进入第i个儿子进行的操作
+int dep[Maxn],sumdep[Maxn];
+int cnt=1;
+double win[Maxn],tot[Maxn];//win[x]：x这颗子树底下赢的期望 ；tot[x]：x这颗子树底下模拟的总次数
+double Win;
+
+double Getrate(bool tp){//evaluate
+	
+	GetDis();
+	double val=0;
+	val=Dis2-Dis1;
+	if(Blocknum1_0>=1)val+=Blocknum1*0.5;
+	if(Blocknum2_0>=1)val-=Blocknum2*0.5;
+
+	if(Blocknum2_0>=4)val-=calc_edge(X1,Y1)*0.1;
+	if(Blocknum1_0>=4)val+=calc_edge(X2,Y2)*0.05;
+
+	if(cycle_0<=3){
+		if(X1<2)val-=abs(X1-2)*10;
+		if(X1>6)val-=abs(X1-6)*10;
+	}
+	if(10-Blocknum1_0<=1){
+		if(ai_side==0){
+			int num=0;
+			for(int j=0;j<8;j++)num+=H2[6][j];
+			val+=num*0.3;
+		}
+		else {
+			int num=0;
+			for(int j=0;j<8;j++)num+=H2[1][j];
+			val+=num*0.3;
+		}
+	}
+	if(cycle_0<=10)val-=Dis3*0.2;
+	if(Blocknum1_0>=3){
+		// val+=(-Dis1)*0.3;
+		val+=Dis2*0.5;
+		// if(cmpquick)val+=(-Dis1)*0.3;
+		// else val+=Dis2*0.3;
+	}
+	return val/6+isEnd()*100.0;
+}
+int For_rand[300];
+
+bool Is_Expansion(int x,int sonid,bool tp){
+	int lasx1=X1,lasy1=Y1,lasx2=X2,lasy2=Y2;
+	pp2 G;
+	if(tp==0){
+		// 0：move
+		G.fi=0;
+		int tox1,toy1;
+		tox1=X1+1,toy1=Y1;
+		if(! (tox1<0||tox1>8||toy1<0||toy1>8||H2[X1][Y1]  ) ){
+			if(tox1==X2&&toy1==Y2){
+				tox1=X1+2,toy1=Y1;
+				if(! (tox1<0||tox1>8||toy1<0||toy1>8||H2[X1+1][Y1]  ) ){
+					if(sonid==0){
+						G.se=pp(tox1,toy1);
+						update1(G);
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+						update1_rev(G,lasx1,lasy1);
+						return 1;
+					}
+				}
+				else {
+					tox1=X1+1,toy1=Y1-1;
+					if(! (tox1<0||tox1>8||toy1<0||toy1>8||H1[X1+1][Y1-1]  ) ){
+						if(sonid==1){
+							G.se=pp(tox1,toy1);
+							update1(G);
+							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							update1_rev(G,lasx1,lasy1);
+							return 1;
+						}
+					}
+
+					tox1=X1+1,toy1=Y1+1;
+					if(! (tox1<0||tox1>8||toy1<0||toy1>8||H1[X1+1][Y1]  ) ){
+						if(sonid==2){
+							G.se=pp(tox1,toy1);
+							update1(G);
+							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							update1_rev(G,lasx1,lasy1);
+							return 1;
+						}
+					}
+				}
+			}
+			else{
+				if(sonid==3){
+					G.se=pp(tox1,toy1);
+					update1(G);
+					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+					update1_rev(G,lasx1,lasy1);
+					return 1;
+				}
+			}
+		}
+		tox1=X1-1,toy1=Y1;
+		if(! (tox1<0||tox1>8||toy1<0||toy1>8||H2[X1-1][Y1]  ) ){
+			if(tox1==X2&&toy1==Y2){
+				tox1=X1-2,toy1=Y1;
+				if(! (tox1<0||tox1>8||toy1<0||toy1>8||H2[X1-2][Y1]  ) ){
+					if(sonid==4){
+						G.se=pp(tox1,toy1);
+						update1(G);
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+						update1_rev(G,lasx1,lasy1);
+						return 1;
+					}
+				}
+				else {
+					tox1=X1-1,toy1=Y1-1;
+					if(! (tox1<0||tox1>8||toy1<0||toy1>8||H1[X1-1][Y1-1]  ) ){
+						if(sonid==5){
+							G.se=pp(tox1,toy1);
+							update1(G);
+							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							update1_rev(G,lasx1,lasy1);
+							return 1;
+						}
+					}
+
+					tox1=X1-1,toy1=Y1+1;
+					if(! (tox1<0||tox1>8||toy1<0||toy1>8||H1[X1-1][Y1]  ) ){
+						if(sonid==6){
+							G.se=pp(tox1,toy1);
+							update1(G);
+							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							update1_rev(G,lasx1,lasy1);
+							return 1;
+						}
+					}
+				}
+			}
+			else{
+				if(sonid==7){
+					G.se=pp(tox1,toy1);
+					update1(G);
+					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+					update1_rev(G,lasx1,lasy1);
+					return 1;
+				}
+			}
+		}
+		tox1=X1,toy1=Y1+1;
+		if(! (tox1<0||tox1>8||toy1<0||toy1>8||H1[X1][Y1]  ) ){
+			if(tox1==X2&&toy1==Y2){
+				tox1=X1,toy1=Y1+2;
+				if(! (tox1<0||tox1>8||toy1<0||toy1>8||H1[X1][Y1+1]  ) ){
+					if(sonid==8){
+						G.se=pp(tox1,toy1);
+						update1(G);
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+						update1_rev(G,lasx1,lasy1);
+						return 1;
+					}
+				}
+				else {
+					tox1=X1-1,toy1=Y1+1;
+					if(! (tox1<0||tox1>8||toy1<0||toy1>8||H2[X1-1][Y1+1]  ) ){
+						if(sonid==9){
+							G.se=pp(tox1,toy1);
+							update1(G);
+							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							update1_rev(G,lasx1,lasy1);
+							return 1;
+						}
+					}
+
+					tox1=X1+1,toy1=Y1+1;
+					if(! (tox1<0||tox1>8||toy1<0||toy1>8||H2[X1][Y1+1]  ) ){
+						if(sonid==10){
+							G.se=pp(tox1,toy1);
+							update1(G);
+							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							update1_rev(G,lasx1,lasy1);
+							return 1;
+						}
+					}
+				}
+			}
+			else{
+				if(sonid==11){
+					G.se=pp(tox1,toy1);
+					update1(G);
+					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+					update1_rev(G,lasx1,lasy1);
+					return 1;
+				}
+			}
+		}
+		tox1=X1,toy1=Y1-1;
+		if(! (tox1<0||tox1>8||toy1<0||toy1>8||H1[X1][Y1-1]  ) ){
+			if(tox1==X2&&toy1==Y2){
+				tox1=X1,toy1=Y1-2;
+				if(! (tox1<0||tox1>8||toy1<0||toy1>8||H1[X1][Y1-2]  ) ){
+					if(sonid==12){
+						G.se=pp(tox1,toy1);
+						update1(G);
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+						update1_rev(G,lasx1,lasy1);
+						return 1;
+					}
+				}
+				else {
+					tox1=X1-1,toy1=Y1-1;
+					if(! (tox1<0||tox1>8||toy1<0||toy1>8||H2[X1-1][Y1-1]  ) ){
+						if(sonid==13){
+							G.se=pp(tox1,toy1);
+							update1(G);
+							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							update1_rev(G,lasx1,lasy1);
+							return 1;
+						}
+					}
+
+					tox1=X1+1,toy1=Y1-1;
+					
+					if(! (tox1<0||tox1>8||toy1<0||toy1>8||H2[X1][Y1-1]  ) ){
+						if(sonid==14){
+							G.se=pp(tox1,toy1);
+							update1(G);
+							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							update1_rev(G,lasx1,lasy1);
+							return 1;
+						}
+					}
+				}
+			}
+			else{
+				if(sonid==15){
+					G.se=pp(tox1,toy1);
+					update1(G);
+					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+					update1_rev(G,lasx1,lasy1);
+					return 1;
+				}
+			}
+		}
+
+		if(Blocknum1){
+			// 1：verical block
+			if(16<=sonid&&sonid<80){
+				G.fi=1;
+				int i=(sonid-16)/8,j=(sonid-16)%8;
+				if(H1[i][j]||H1[i+1][j]||H3[i][j])return 0;
+				G.se=pp(i,j);
+				update1(G);
+				if(!isAllBlock())son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+				update1_rev(G,lasx1,lasy1);
+				return 1;
+			}
+			// 2：horizontal block
+			if(80<=sonid&&sonid<144){
+				G.fi=2;
+				int i=(sonid-80)/8,j=(sonid-80)%8;
+				if(H2[i][j]||H2[i][j+1]||H3[i][j])return 0;
+				G.se=pp(i,j);
+				update1(G);
+				if(!isAllBlock())son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+				update1_rev(G,lasx1,lasy1);
+				return 1;
+			}
+		}
+	}
+	else {
+		// 0：move
+		G.fi=0;
+		int tox2,toy2;
+		tox2=X2+1,toy2=Y2;
+		if(! (tox2<0||tox2>8||toy2<0||toy2>8||H2[X2][Y2]  ) ){
+			if(tox2==X1&&toy2==Y1){
+				tox2=X2+2,toy2=Y2;
+				if(! (tox2<0||tox2>8||toy2<0||toy2>8||H2[X2+1][Y2]  ) ){
+					if(sonid==0){
+						G.se=pp(tox2,toy2);
+						update2(G);
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+						update2_rev(G,lasx2,lasy2);
+						return 1;
+					}
+				}
+				else {
+					tox2=X2+1,toy2=Y2-1;
+					if(! (tox2<0||tox2>8||toy2<0||toy2>8||H1[X2+1][Y2-1]  ) ){
+						if(sonid==1){
+							G.se=pp(tox2,toy2);
+							update2(G);
+							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							update2_rev(G,lasx2,lasy2);
+							return 1;
+						}
+					}
+
+					tox2=X2+1,toy2=Y2+1;
+					
+					if(! (tox2<0||tox2>8||toy2<0||toy2>8||H1[X2+1][Y2]  ) ){
+						if(sonid==2){
+							G.se=pp(tox2,toy2);
+							update2(G);
+							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							update2_rev(G,lasx2,lasy2);
+							return 1;
+						}
+					}
+				}
+			}
+			else{
+				if(sonid==3){
+					G.se=pp(tox2,toy2);
+					update2(G);
+					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+					update2_rev(G,lasx2,lasy2);
+					return 1;
+				}
+			}
+		}
+		tox2=X2-1,toy2=Y2;
+		if(! (tox2<0||tox2>8||toy2<0||toy2>8||H2[X2-1][Y2]  ) ){
+			if(tox2==X1&&toy2==Y1){
+				tox2=X2-2,toy2=Y2;
+				if(! (tox2<0||tox2>8||toy2<0||toy2>8||H2[X2-2][Y2]  ) ){
+					if(sonid==4){
+						G.se=pp(tox2,toy2);
+						update2(G);
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+						update2_rev(G,lasx2,lasy2);
+						return 1;
+					}
+				}
+				else {
+					tox2=X2-1,toy2=Y2-1;
+					if(! (tox2<0||tox2>8||toy2<0||toy2>8||H1[X2-1][Y2-1]  ) ){
+						if(sonid==5){
+							G.se=pp(tox2,toy2);
+							update2(G);
+							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							update2_rev(G,lasx2,lasy2);
+							return 1;
+						}
+					}
+
+					tox2=X2-1,toy2=Y2+1;
+					
+					if(! (tox2<0||tox2>8||toy2<0||toy2>8||H1[X2-1][Y2]  ) ){
+						if(sonid==6){
+							G.se=pp(tox2,toy2);
+							update2(G);
+							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							update2_rev(G,lasx2,lasy2);
+							return 1;
+						}
+					}
+				}
+			}
+			else{
+				if(sonid==7){
+					G.se=pp(tox2,toy2);
+					update2(G);
+					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+					update2_rev(G,lasx2,lasy2);
+					return 1;
+				}
+			}
+		}
+		tox2=X2,toy2=Y2+1;
+		if(! (tox2<0||tox2>8||toy2<0||toy2>8||H1[X2][Y2]  ) ){
+			if(tox2==X1&&toy2==Y1){
+				tox2=X2,toy2=Y2+2;
+				if(! (tox2<0||tox2>8||toy2<0||toy2>8||H1[X2][Y2+1]  ) ){
+					if(sonid==8){
+						G.se=pp(tox2,toy2);
+						update2(G);
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+						update2_rev(G,lasx2,lasy2);
+						return 1;
+					}
+				}
+				else {
+					tox2=X2-1,toy2=Y2+1;
+					if(! (tox2<0||tox2>8||toy2<0||toy2>8||H2[X2-1][Y2+1]  ) ){
+						if(sonid==9){
+							G.se=pp(tox2,toy2);
+							update2(G);
+							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							update2_rev(G,lasx2,lasy2);
+							return 1;
+						}
+					}
+
+					tox2=X2+1,toy2=Y2+1;
+					
+					if(! (tox2<0||tox2>8||toy2<0||toy2>8||H2[X2][Y2+1]  ) ){
+						if(sonid==10){
+							G.se=pp(tox2,toy2);
+							update2(G);
+							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							update2_rev(G,lasx2,lasy2);
+							return 1;
+						}
+					}
+				}
+			}
+			else{
+				if(sonid==11){
+					G.se=pp(tox2,toy2);
+					update2(G);
+					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+					update2_rev(G,lasx2,lasy2);
+					return 1;
+				}
+			}
+		}
+		tox2=X2,toy2=Y2-1;
+		if(! (tox2<0||tox2>8||toy2<0||toy2>8||H1[X2][Y2-1]  ) ){
+			if(tox2==X1&&toy2==Y1){
+				tox2=X2,toy2=Y2-2;
+				if(! (tox2<0||tox2>8||toy2<0||toy2>8||H1[X2][Y2-2]  ) ){
+					if(sonid==12){
+						G.se=pp(tox2,toy2);
+						update2(G);
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+						update2_rev(G,lasx2,lasy2);
+						return 1;
+					}
+				}
+				else {
+					tox2=X2-1,toy2=Y2-1;
+					if(! (tox2<0||tox2>8||toy2<0||toy2>8||H2[X2-1][Y2-1]  ) ){
+						if(sonid==13){
+							G.se=pp(tox2,toy2);
+							update2(G);
+							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							update2_rev(G,lasx2,lasy2);
+							return 1;
+						}
+					}
+
+					tox2=X2+1,toy2=Y2-1;
+					
+					if(! (tox2<0||tox2>8||toy2<0||toy2>8||H2[X2][Y2-1]  ) ){
+						if(sonid==14){
+							G.se=pp(tox2,toy2);
+							update2(G);
+							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							update2_rev(G,lasx2,lasy2);
+							return 1;
+						}
+					}
+				}
+			}
+			else{
+				if(sonid==15){
+					G.se=pp(tox2,toy2);
+					update2(G);
+					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+					update2_rev(G,lasx2,lasy2);
+					return 1;
+				}
+			}
+		}
+
+		if(Blocknum2){
+			// 1：verical block
+			if(16<=sonid&&sonid<80){
+				G.fi=1;
+				int i=(sonid-16)/8,j=(sonid-16)%8;
+				if(H1[i][j]||H1[i+1][j]||H3[i][j])return 0;
+				G.se=pp(i,j);
+				update2(G);
+				if(!isAllBlock())son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+				update2_rev(G,lasx2,lasy2);
+				return 1;
+			}
+			// 2：horizontal block
+			if(80<=sonid&&sonid<144){
+				G.fi=2;
+				int i=(sonid-80)/8,j=(sonid-80)%8;
+				if(H2[i][j]||H2[i][j+1]||H3[i][j])return 0;
+				G.se=pp(i,j);
+				update2(G);
+				if(!isAllBlock())son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+				update2_rev(G,lasx2,lasy2);
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+void Getorder(int x){
+	for(int i=0;i<144;i++)For_rand[i]=i;
+	random_shuffle(For_rand,For_rand+16);
+	random_shuffle(For_rand+16,For_rand+144);
+	for(int i=0;i<144;i++)order[x].push_back(For_rand[i]);
+	R[x]=0;
+}
+
+double Simulation(int x,bool tp){
+	return Getrate(tp);
+	// return (rand()%1000000)/1000000.0<=Getrate(tp)?1:0;
+}
+
+void Selection(int x,bool tp){
+	int lasx1=X1,lasy1=Y1,lasx2=X2,lasy2=Y2;
+	if(isEnd()){
+		Win=Simulation(x,tp);
+		tot[x]++,win[x]+=Win;
+		return;
+	}
+	while(R[x]<(int)order[x].size()){
+		if(Is_Expansion(x,R[x],tp))break;
+		R[x]++;
+	}
+	if(R[x]!=(int)order[x].size()){//未完全展开
+		int G=(int)son[x].size()-1;
+		dep[son[x][G]]=dep[x]+1,sumdep[dep[son[x][G]]]++;
+		tp==0?update1(op[x][G]):update2(op[x][G]);
+		Getorder(son[x][G]);
+		Win=Simulation(son[x][G],tp^1);
+		tot[son[x][G]]++,win[son[x][G]]+=Win;
+		tot[x]++,win[x]+=Win;
+		tp==0?update1_rev(op[x][G],lasx1,lasy1):update2_rev(op[x][G],lasx2,lasy2);
+		R[x]++;
+		return;
+	}
+	//x点已完全展开，即儿子点全都被访问过至少1次
+	double MinMax=-1e9;
+	int G=0;
+	for(int i=0;i<(int)son[x].size();i++){
+		int to=son[x][i];
+		// double UCT=1.0*win[to]/tot[to]+c*P[x][i]*sqrt(1.0*log2(tot[x])/(tot[to]+1));
+		// double UCT=1.0*win[to]/tot[to]+c*sqrt(1.0*log2(tot[x])/(tot[to]+1));
+		double UCT;
+		if(tp==0)UCT=1.0*win[to]/tot[to]+c*sqrt(1.0*log2(tot[x])/(tot[to]+1));
+		else UCT=1.0*(tot[to]-win[to])/tot[to]+c*sqrt(1.0*log2(tot[x])/(tot[to]+1));
+		if(UCT>MinMax)MinMax=UCT,G=i;
+	}
+	tp==0?update1(op[x][G]):update2(op[x][G]);
+	Selection(son[x][G],tp^1);
+	tot[x]++,win[x]+=Win;
+	tp==0?update1_rev(op[x][G],lasx1,lasy1):update2_rev(op[x][G],lasx2,lasy2);
+}
+pp2 MCTS(){
+	Getorder(1);
+	int cycle=0;
+	int Clo1=clock();
+	while(1){
+		cycle++;
+		Selection(1,0);
+		if((double)(clock()-Clo1)/CLOCKS_PER_SEC>1.5)break;
+	}
+	cerr<<"cycle="<<cycle<<endl;
+	// for(int i=1;i<=30000;i++)Selection(1,0);
+	double MinMax=-1e9;
+	int G=0;
+	for(int i=0;i<(int)son[1].size();i++){
+		int to=son[1][i];
+		// cerr<<"@@@"<<1.0*win[to]/tot[to]<<" "<<P[1][i]<<" "<<1.0*win[to]/tot[to]+c*P[1][i]*sqrt(1.0*log2(tot[1])/(tot[to]+1))<<endl;
+		// double UCT=1.0*win[to]/tot[to]+c*sqrt(1.0*log2(tot[1])/tot[to]);
+		// double UCT=1.0*win[to]/tot[to]+c*sqrt(1.0*log2(tot[1])/(tot[to]+1));
+		double UCT=1.0*win[to]/tot[to];
+		if(UCT>MinMax)MinMax=UCT,G=i;
+	}
+	pp2 ans=op[1][G];
+
+	for(int i=1;i<=10;i++)cerr<<"sumdep["<<i<<"]="<<sumdep[i]<<endl;
+
+	for(int i=0;i<Maxn;i++)order[i].clear(),son[i].clear(),op[i].clear(),P[i].clear(),win[i]=tot[i]=0,R[i]=0;
+	cnt=1;
+	memset(dep,0,sizeof dep);
+	memset(sumdep,0,sizeof sumdep);
+	return ans;
+}
+
+
+
 double Getval(bool tp){//evaluate
 	
 	
@@ -218,14 +777,14 @@ double Getval(bool tp){//evaluate
 		val=(Dis2-Dis1);
 		if(Blocknum1_0>=1)val+=Blocknum1*0.5;
 		if(Blocknum2_0>=1)val-=Blocknum2*0.5;
-		// if(Blocknum1_0>=4&&Blocknum2_0>=4&&Blocknum2_0-Blocknum1_0>=2)val+=Blocknum1*0.2;
+		// if(Blocknum1_0>=4&&Blocknum2_0>=4&&Blocknum2_0-Blocknum1_0>=3)val+=Blocknum1*4.0;
 
 		if(Blocknum2_0)val-=calc_edge(X1,Y1)*0.1;
 		if(Blocknum1_0)val+=calc_edge(X2,Y2)*0.05;
 
 		if(cycle<=3){
-			if(X1<3)val-=abs(X1-3)*10;
-			if(X1>5)val-=abs(X1-5)*10;
+			if(X1<2)val-=abs(X1-2)*10;
+			if(X1>6)val-=abs(X1-6)*10;
 		}
 		if(10-Blocknum1_0<=2){
 			if(ai_side==0){
@@ -241,12 +800,12 @@ double Getval(bool tp){//evaluate
 				val+=num*0.3;
 			}
 		}
-		if(cycle<=10)val-=Dis3*0.3;
+		if(cycle<=10)val-=Dis3*0.5;
 		if(Blocknum1_0>=3){
 			// val+=(-Dis1)*0.3;
-			val+=Dis2*0.5;
-			// if(cmpquick)val+=(-Dis1)*0.3;
-			// else val+=Dis2*0.3;
+			// val+=Dis2*0.5;
+			if(cmpquick)val+=(-Dis1)*0.3;
+			else val+=Dis2*0.3;
 		}
 	}
 	else {
@@ -696,27 +1255,27 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 	ret=ans;
 	return Val;
 }
+
+
+
+
+
+
 pp2 action(pp2 loc) {
+	
 	cycle++;
 	update2(loc);
 
-	pp2 ans;
-
-	// bool flag=0;
-	// if(cycle==1&&ai_side==0){
-	// 	ans=pp2(0,pp(8,5)),flag=1;
-	// }
-	// if(flag){
-	// 	update1(ans);
-	// 	return ans;
-	// }
-
 	GetDis();
+	cycle_0=cycle;
 	cmpquick=(Dis1<Dis2?1:0);
 	Blocknum1_0=Blocknum1,Blocknum2_0=Blocknum2;
 
+	pp2 ans;
+
+	if(Blocknum1)ans=MCTS();
+	else MiniMaxSearch(0,1,inf+1,ans);
 	
-	MiniMaxSearch(0,Blocknum1?3:1,inf+1,ans);
 	// cerr<<"!!!"<<ans.fi<<" "<<ans.se.fi<<" "<<ans.se.se<<endl;
 	update1(ans);
 	// usleep(300000);

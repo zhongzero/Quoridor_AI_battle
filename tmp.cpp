@@ -1,8 +1,8 @@
-// 4、6全胜 对5胜率极大 尽量和对面贴贴就能赢
 #include "AIController.h"
 #include <utility>
 #include<bits/stdc++.h>
 #include <unistd.h>
+#define Maxn 20000010
 using namespace std;
 #define pp pair<int,int>
 #define pp2 pair<int,pp>
@@ -155,34 +155,6 @@ int calc_edge(int x,int y){
 	else return G;
 	// return min(2,G);
 }
-// void SPFA(int x0,int y0){
-// 	for(int i=0;i<9;i++)for(int j=0;j<9;j++)dis[i][j]=inf;
-// 	memset(vis,0,sizeof vis);
-// 	dis[x0][y0]=+calc_edge(x0,y0)*0.001;
-// 	W.push(pp(x0,y0));
-// 	while(!W.empty()){
-// 		int x=W.front().fi,y=W.front().se;
-// 		W.pop();
-// 		vis[x][y]=0;
-// 		double val=dis[x][y]+1+calc_edge(x,y)*0.001;
-// 		if(x-1>=0&&dis[x-1][y]>val&&!H2[x-1][y]){
-// 			dis[x-1][y]=val;
-// 			if(!vis[x-1][y])W.push(pp(x-1,y)),vis[x-1][y]=1;
-// 		}
-// 		if(x+1<=8&&dis[x+1][y]>val&&!H2[x][y]){
-// 			dis[x+1][y]=val;
-// 			if(!vis[x+1][y])W.push(pp(x+1,y)),vis[x+1][y]=1;
-// 		}
-// 		if(y-1>=0&&dis[x][y-1]>val&&!H1[x][y-1]){
-// 			dis[x][y-1]=val;
-// 			if(!vis[x][y-1])W.push(pp(x,y-1)),vis[x][y-1]=1;
-// 		}
-// 		if(y+1<=8&&dis[x][y+1]>val&&!H1[x][y]){
-// 			dis[x][y+1]=val;
-// 			if(!vis[x][y+1])W.push(pp(x,y+1)),vis[x][y+1]=1;
-// 		}
-// 	}
-// }
 double Dis1,Dis2,Dis3;
 int P1,P2;
 bool cmpquick;
@@ -208,66 +180,69 @@ void GetDis(){
 		Dis3=dis[X1][Y1];
 	}
 }
-double Getval(bool tp){//evaluate
+
+
+
+
+const double c=sqrt(2);
+vector<int>son[Maxn];//son[x][i]：x的第i个儿子 
+vector<double>P[Maxn];
+vector<pp2>op[Maxn];//op[x][i]：x进入第i个儿子进行的操作
+int cnt=1;
+double win[Maxn],tot[Maxn];//win[x]：x这颗子树底下赢的期望 ；tot[x]：x这颗子树底下模拟的总次数
+double Win;
+
+double Getrate(bool tp){//evaluate
 	
 	
-	if(isEnd())return isEnd()==1?inf-1:-(inf-1);
+	// if(isEnd()){
+	// 	return isEnd()==1?1:-1;
+	// }
 	GetDis();
-	double val;
-	if(tp==1){
-		val=(Dis2-Dis1);
-		if(Blocknum1_0>=1)val+=Blocknum1*0.5;
-		if(Blocknum2_0>=1)val-=Blocknum2*0.5;
-		// if(Blocknum1_0>=4&&Blocknum2_0>=4&&Blocknum2_0-Blocknum1_0>=2)val+=Blocknum1*0.2;
+	double val1=0,val2=0;
+	val1=-Dis1,val2=-Dis2;
+	if(Blocknum1_0>=1)val1+=Blocknum1*0.001;
+	if(Blocknum2_0>=1)val2+=Blocknum2*0.001;
+	// if(Blocknum1_0>=4&&Blocknum2_0>=4&&Blocknum2_0-Blocknum1_0>=3)val+=Blocknum1*4.0;
 
-		if(Blocknum2_0)val-=calc_edge(X1,Y1)*0.1;
-		if(Blocknum1_0)val+=calc_edge(X2,Y2)*0.05;
+	if(Blocknum2_0)val1-=calc_edge(X1,Y1)*0.00001;
+	if(Blocknum1_0)val2-=calc_edge(X2,Y2)*0.00001;
 
-		if(cycle<=3){
-			if(X1<3)val-=abs(X1-3)*10;
-			if(X1>5)val-=abs(X1-5)*10;
-		}
-		if(10-Blocknum1_0<=2){
-			if(ai_side==0){
-				int num=0;
-				// for(int i=X1;i<8;i++)for(int j=0;j<8;j++)num+=H2[i][j];
-				for(int j=0;j<8;j++)num+=H2[6][j];
-				val+=num*0.3;
-			}
-			else {
-				int num=0;
-				// for(int i=0;i<X1;i++)for(int j=0;j<8;j++)num+=H2[i][j];
-				for(int j=0;j<8;j++)num+=H2[1][j];
-				val+=num*0.3;
-			}
-		}
-		if(cycle<=10)val-=Dis3*0.3;
-		if(Blocknum1_0>=3){
-			// val+=(-Dis1)*0.3;
-			val+=Dis2*0.5;
-			// if(cmpquick)val+=(-Dis1)*0.3;
-			// else val+=Dis2*0.3;
-		}
-	}
-	else {
-		// val=Dis2-Dis1;
-	}
-	return val;
+	// if(cycle<=3){
+	// 	if(X1<3)val-=abs(X1-3)*10;
+	// 	if(X1>5)val-=abs(X1-5)*10;
+	// }
+	// if(10-Blocknum1_0<=2){
+	// 	if(ai_side==0){
+	// 		int num=0;
+	// 		// for(int i=X1;i<8;i++)for(int j=0;j<8;j++)num+=H2[i][j];
+	// 		for(int j=0;j<8;j++)num+=H2[6][j];
+	// 		val+=num*0.3;
+	// 	}
+	// 	else {
+	// 		int num=0;
+	// 		// for(int i=0;i<X1;i++)for(int j=0;j<8;j++)num+=H2[i][j];
+	// 		for(int j=0;j<8;j++)num+=H2[1][j];
+	// 		val+=num*0.3;
+	// 	}
+	// }
+	// if(cycle<=10)val-=Dis3*0.3;
+	// if(Blocknum1_0>=3){
+	// 	// val+=(-Dis1)*0.3;
+	// 	val+=Dis2*0.5;
+	// 	// if(cmpquick)val+=(-Dis1)*0.3;
+	// 	// else val+=Dis2*0.3;
+	// }
+	// cerr<<"!!!"<<exp(val1)/(exp(val1)+exp(val2))<<" "<<val1<<" "<<val2<<endl;
+	// return exp(val1)/(exp(val1)+exp(val2));
+	return 0.5+(val1-val2)/10+isEnd()*0.5;
 }
-double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我的回合；tp=1 对方的回合
-	// double NowVal=Getval(tp);
-	// if(NowVal==LasVal)return tp==1?-inf:inf;
-	int lasx1=X1,lasy1=Y1,lasx2=X2,lasy2=Y2;
-	pp2 G,ans,tmpans;
-	double Val;
-	if(dep==0||isEnd()){
-		Val=Getval(tp);
-		// cerr<<"!!! "<<X1<<" "<<Y1<<" "<<X2<<" "<<Y2<<" "<<Val<<endl;
-		return Val;
-	}
-	if(tp==0){
-		Val=-inf;
+int For_rand[300];
 
+void Expansion(int x,bool tp){
+	int lasx1=X1,lasy1=Y1,lasx2=X2,lasy2=Y2;
+	pp2 G;
+	if(tp==0){
 		// 0：move
 		G.fi=0;
 		int tox1,toy1;
@@ -278,40 +253,32 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 				if(! (tox1<0||tox1>8||toy1<0||toy1>8||H2[X1+1][Y1]  ) ){
 					G.se=pp(tox1,toy1);
 					update1(G);
-					double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-					if(tmp>Val)Val=tmp,ans=G;
+					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 					update1_rev(G,lasx1,lasy1);
-					if(Val>=FaMinMax){ret=ans;return Val;}
 				}
 				else {
 					tox1=X1+1,toy1=Y1-1;
 					if(! (tox1<0||tox1>8||toy1<0||toy1>8||H1[X1+1][Y1-1]  ) ){
 						G.se=pp(tox1,toy1);
 						update1(G);
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp>Val)Val=tmp,ans=G;
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 						update1_rev(G,lasx1,lasy1);
-						if(Val>=FaMinMax){ret=ans;return Val;}
 					}
 
 					tox1=X1+1,toy1=Y1+1;
 					if(! (tox1<0||tox1>8||toy1<0||toy1>8||H1[X1+1][Y1]  ) ){
 						G.se=pp(tox1,toy1);
 						update1(G);
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp>Val)Val=tmp,ans=G;
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 						update1_rev(G,lasx1,lasy1);
-						if(Val>=FaMinMax){ret=ans;return Val;}
 					}
 				}
 			}
 			else{
 				G.se=pp(tox1,toy1);
 				update1(G);
-				double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-				if(tmp>Val)Val=tmp,ans=G;
+				son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 				update1_rev(G,lasx1,lasy1);
-				if(Val>=FaMinMax){ret=ans;return Val;}
 			}
 		}
 		tox1=X1-1,toy1=Y1;
@@ -321,40 +288,32 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 				if(! (tox1<0||tox1>8||toy1<0||toy1>8||H2[X1-2][Y1]  ) ){
 					G.se=pp(tox1,toy1);
 					update1(G);
-					double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-					if(tmp>Val)Val=tmp,ans=G;
+					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 					update1_rev(G,lasx1,lasy1);
-					if(Val>=FaMinMax){ret=ans;return Val;}
 				}
 				else {
 					tox1=X1-1,toy1=Y1-1;
 					if(! (tox1<0||tox1>8||toy1<0||toy1>8||H1[X1-1][Y1-1]  ) ){
 						G.se=pp(tox1,toy1);
 						update1(G);
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp>Val)Val=tmp,ans=G;
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 						update1_rev(G,lasx1,lasy1);
-						if(Val>=FaMinMax){ret=ans;return Val;}
 					}
 
 					tox1=X1-1,toy1=Y1+1;
 					if(! (tox1<0||tox1>8||toy1<0||toy1>8||H1[X1-1][Y1]  ) ){
 						G.se=pp(tox1,toy1);
 						update1(G);
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp>Val)Val=tmp,ans=G;
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 						update1_rev(G,lasx1,lasy1);
-						if(Val>=FaMinMax){ret=ans;return Val;}
 					}
 				}
 			}
 			else{
 				G.se=pp(tox1,toy1);
 				update1(G);
-				double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-				if(tmp>Val)Val=tmp,ans=G;
+				son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 				update1_rev(G,lasx1,lasy1);
-				if(Val>=FaMinMax){ret=ans;return Val;}
 			}
 		}
 		tox1=X1,toy1=Y1+1;
@@ -364,40 +323,32 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 				if(! (tox1<0||tox1>8||toy1<0||toy1>8||H1[X1][Y1+1]  ) ){
 					G.se=pp(tox1,toy1);
 					update1(G);
-					double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-					if(tmp>Val)Val=tmp,ans=G;
+					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 					update1_rev(G,lasx1,lasy1);
-					if(Val>=FaMinMax){ret=ans;return Val;}
 				}
 				else {
 					tox1=X1-1,toy1=Y1+1;
 					if(! (tox1<0||tox1>8||toy1<0||toy1>8||H2[X1-1][Y1+1]  ) ){
 						G.se=pp(tox1,toy1);
 						update1(G);
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp>Val)Val=tmp,ans=G;
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 						update1_rev(G,lasx1,lasy1);
-						if(Val>=FaMinMax){ret=ans;return Val;}
 					}
 
 					tox1=X1+1,toy1=Y1+1;
 					if(! (tox1<0||tox1>8||toy1<0||toy1>8||H2[X1][Y1+1]  ) ){
 						G.se=pp(tox1,toy1);
 						update1(G);
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp>Val)Val=tmp,ans=G;
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 						update1_rev(G,lasx1,lasy1);
-						if(Val>=FaMinMax){ret=ans;return Val;}
 					}
 				}
 			}
 			else{
 				G.se=pp(tox1,toy1);
 				update1(G);
-				double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-				if(tmp>Val)Val=tmp,ans=G;
+				son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 				update1_rev(G,lasx1,lasy1);
-				if(Val>=FaMinMax){ret=ans;return Val;}
 			}
 		}
 		tox1=X1,toy1=Y1-1;
@@ -407,20 +358,16 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 				if(! (tox1<0||tox1>8||toy1<0||toy1>8||H1[X1][Y1-2]  ) ){
 					G.se=pp(tox1,toy1);
 					update1(G);
-					double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-					if(tmp>Val)Val=tmp,ans=G;
+					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 					update1_rev(G,lasx1,lasy1);
-					if(Val>=FaMinMax){ret=ans;return Val;}
 				}
 				else {
 					tox1=X1-1,toy1=Y1-1;
 					if(! (tox1<0||tox1>8||toy1<0||toy1>8||H2[X1-1][Y1-1]  ) ){
 						G.se=pp(tox1,toy1);
 						update1(G);
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp>Val)Val=tmp,ans=G;
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 						update1_rev(G,lasx1,lasy1);
-						if(Val>=FaMinMax){ret=ans;return Val;}
 					}
 
 					tox1=X1+1,toy1=Y1-1;
@@ -428,20 +375,16 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 					if(! (tox1<0||tox1>8||toy1<0||toy1>8||H2[X1][Y1-1]  ) ){
 						G.se=pp(tox1,toy1);
 						update1(G);
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp>Val)Val=tmp,ans=G;
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 						update1_rev(G,lasx1,lasy1);
-						if(Val>=FaMinMax){ret=ans;return Val;}
 					}
 				}
 			}
 			else{
 				G.se=pp(tox1,toy1);
 				update1(G);
-				double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-				if(tmp>Val)Val=tmp,ans=G;
+				son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 				update1_rev(G,lasx1,lasy1);
-				if(Val>=FaMinMax){ret=ans;return Val;}
 			}
 		}
 
@@ -453,12 +396,8 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 					if(H1[i][j]||H1[i+1][j]||H3[i][j])continue;
 					G.se=pp(i,j);
 					update1(G);
-					if(!isAllBlock()){
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp>Val)Val=tmp,ans=G;
-					}
+					if(!isAllBlock())son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 					update1_rev(G,lasx1,lasy1);
-					if(Val>=FaMinMax){ret=ans;return Val;}
 				}
 			}
 			// 2：horizontal block
@@ -468,18 +407,13 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 					if(H2[i][j]||H2[i][j+1]||H3[i][j])continue;
 					G.se=pp(i,j);
 					update1(G);
-					if(!isAllBlock()){
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp>Val)Val=tmp,ans=G;
-					}
+					if(!isAllBlock())son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 					update1_rev(G,lasx1,lasy1);
-					if(Val>=FaMinMax){ret=ans;return Val;}
 				}
 			}
 		}
 	}
 	else {
-		Val=inf;
 		// 0：move
 		G.fi=0;
 		int tox2,toy2;
@@ -490,20 +424,16 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 				if(! (tox2<0||tox2>8||toy2<0||toy2>8||H2[X2+1][Y2]  ) ){
 					G.se=pp(tox2,toy2);
 					update2(G);
-					double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-					if(tmp<Val)Val=tmp,ans=G;
+					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 					update2_rev(G,lasx2,lasy2);
-					if(Val<=FaMinMax){ret=ans;return Val;}
 				}
 				else {
 					tox2=X2+1,toy2=Y2-1;
 					if(! (tox2<0||tox2>8||toy2<0||toy2>8||H1[X2+1][Y2-1]  ) ){
 						G.se=pp(tox2,toy2);
 						update2(G);
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp<Val)Val=tmp,ans=G;
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 						update2_rev(G,lasx2,lasy2);
-						if(Val<=FaMinMax){ret=ans;return Val;}
 					}
 
 					tox2=X2+1,toy2=Y2+1;
@@ -511,20 +441,16 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 					if(! (tox2<0||tox2>8||toy2<0||toy2>8||H1[X2+1][Y2]  ) ){
 						G.se=pp(tox2,toy2);
 						update2(G);
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp<Val)Val=tmp,ans=G;
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 						update2_rev(G,lasx2,lasy2);
-						if(Val<=FaMinMax){ret=ans;return Val;}
 					}
 				}
 			}
 			else{
 				G.se=pp(tox2,toy2);
 				update2(G);
-				double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-				if(tmp<Val)Val=tmp,ans=G;
+				son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 				update2_rev(G,lasx2,lasy2);
-				if(Val<=FaMinMax){ret=ans;return Val;}
 			}
 		}
 		tox2=X2-1,toy2=Y2;
@@ -534,20 +460,16 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 				if(! (tox2<0||tox2>8||toy2<0||toy2>8||H2[X2-2][Y2]  ) ){
 					G.se=pp(tox2,toy2);
 					update2(G);
-					double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-					if(tmp<Val)Val=tmp,ans=G;
+					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 					update2_rev(G,lasx2,lasy2);
-					if(Val<=FaMinMax){ret=ans;return Val;}
 				}
 				else {
 					tox2=X2-1,toy2=Y2-1;
 					if(! (tox2<0||tox2>8||toy2<0||toy2>8||H1[X2-1][Y2-1]  ) ){
 						G.se=pp(tox2,toy2);
 						update2(G);
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp<Val)Val=tmp,ans=G;
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 						update2_rev(G,lasx2,lasy2);
-						if(Val<=FaMinMax){ret=ans;return Val;}
 					}
 
 					tox2=X2-1,toy2=Y2+1;
@@ -555,20 +477,16 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 					if(! (tox2<0||tox2>8||toy2<0||toy2>8||H1[X2-1][Y2]  ) ){
 						G.se=pp(tox2,toy2);
 						update2(G);
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp<Val)Val=tmp,ans=G;
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 						update2_rev(G,lasx2,lasy2);
-						if(Val<=FaMinMax){ret=ans;return Val;}
 					}
 				}
 			}
 			else{
 				G.se=pp(tox2,toy2);
 				update2(G);
-				double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-				if(tmp<Val)Val=tmp,ans=G;
+				son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 				update2_rev(G,lasx2,lasy2);
-				if(Val<=FaMinMax){ret=ans;return Val;}
 			}
 		}
 		tox2=X2,toy2=Y2+1;
@@ -578,20 +496,16 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 				if(! (tox2<0||tox2>8||toy2<0||toy2>8||H1[X2][Y2+1]  ) ){
 					G.se=pp(tox2,toy2);
 					update2(G);
-					double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-					if(tmp<Val)Val=tmp,ans=G;
+					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 					update2_rev(G,lasx2,lasy2);
-					if(Val<=FaMinMax){ret=ans;return Val;}
 				}
 				else {
 					tox2=X2-1,toy2=Y2+1;
 					if(! (tox2<0||tox2>8||toy2<0||toy2>8||H2[X2-1][Y2+1]  ) ){
 						G.se=pp(tox2,toy2);
 						update2(G);
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp<Val)Val=tmp,ans=G;
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 						update2_rev(G,lasx2,lasy2);
-						if(Val<=FaMinMax){ret=ans;return Val;}
 					}
 
 					tox2=X2+1,toy2=Y2+1;
@@ -599,20 +513,16 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 					if(! (tox2<0||tox2>8||toy2<0||toy2>8||H2[X2][Y2+1]  ) ){
 						G.se=pp(tox2,toy2);
 						update2(G);
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp<Val)Val=tmp,ans=G;
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 						update2_rev(G,lasx2,lasy2);
-						if(Val<=FaMinMax){ret=ans;return Val;}
 					}
 				}
 			}
 			else{
 				G.se=pp(tox2,toy2);
 				update2(G);
-				double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-				if(tmp<Val)Val=tmp,ans=G;
+				son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 				update2_rev(G,lasx2,lasy2);
-				if(Val<=FaMinMax){ret=ans;return Val;}
 			}
 		}
 		tox2=X2,toy2=Y2-1;
@@ -622,20 +532,16 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 				if(! (tox2<0||tox2>8||toy2<0||toy2>8||H1[X2][Y2-2]  ) ){
 					G.se=pp(tox2,toy2);
 					update2(G);
-					double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-					if(tmp<Val)Val=tmp,ans=G;
+					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 					update2_rev(G,lasx2,lasy2);
-					if(Val<=FaMinMax){ret=ans;return Val;}
 				}
 				else {
 					tox2=X2-1,toy2=Y2-1;
 					if(! (tox2<0||tox2>8||toy2<0||toy2>8||H2[X2-1][Y2-1]  ) ){
 						G.se=pp(tox2,toy2);
 						update2(G);
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp<Val)Val=tmp,ans=G;
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 						update2_rev(G,lasx2,lasy2);
-						if(Val<=FaMinMax){ret=ans;return Val;}
 					}
 
 					tox2=X2+1,toy2=Y2-1;
@@ -643,20 +549,16 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 					if(! (tox2<0||tox2>8||toy2<0||toy2>8||H2[X2][Y2-1]  ) ){
 						G.se=pp(tox2,toy2);
 						update2(G);
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp<Val)Val=tmp,ans=G;
+						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 						update2_rev(G,lasx2,lasy2);
-						if(Val<=FaMinMax){ret=ans;return Val;}
 					}
 				}
 			}
 			else{
 				G.se=pp(tox2,toy2);
 				update2(G);
-				double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-				if(tmp<Val)Val=tmp,ans=G;
+				son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 				update2_rev(G,lasx2,lasy2);
-				if(Val<=FaMinMax){ret=ans;return Val;}
 			}
 		}
 
@@ -668,12 +570,8 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 					if(H1[i][j]||H1[i+1][j]||H3[i][j])continue;
 					G.se=pp(i,j);
 					update2(G);
-					if(!isAllBlock()){
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp<Val)Val=tmp,ans=G;
-					}
+					if(!isAllBlock())son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 					update2_rev(G,lasx2,lasy2);
-					if(Val<=FaMinMax){ret=ans;return Val;}
 				}
 			}
 			// 2：horizontal block
@@ -683,40 +581,115 @@ double MiniMaxSearch(int tp,int dep,const double &FaMinMax,pp2 &ret){//tp=0 我�
 					if(H2[i][j]||H2[i][j+1]||H3[i][j])continue;
 					G.se=pp(i,j);
 					update2(G);
-					if(!isAllBlock()){
-						double tmp=MiniMaxSearch(tp^1,dep-1,Val,tmpans);
-						if(tmp<Val)Val=tmp,ans=G;
-					}
+					if(!isAllBlock())son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
 					update2_rev(G,lasx2,lasy2);
-					if(Val<=FaMinMax){ret=ans;return Val;}
 				}
 			}
 		}
 	}
-	ret=ans;
-	return Val;
+	int num=(int)son[x].size();
+	double sum=0;
+	// for(int i=0;i<num;i++)sum+=P[x][i];
+	// for(int i=0;i<num;i++)P[x][i]=P[x][i]/sum;
+	for(int i=0;i<num;i++)P[x][i]=1;
+
+	for(int i=0;i<num;i++)For_rand[i]=i;
+	random_shuffle(For_rand,For_rand+min(4,num));
+	if(num>4)random_shuffle(For_rand+4,For_rand+num);
+	for(int i=0;i<num;i++){
+		int g=(rand()&1);
+		if(g){
+			swap(son[x][i],son[x][For_rand[i]]);
+			swap(op[x][i],op[x][For_rand[i]]);
+			swap(P[x][i],P[x][For_rand[i]]);
+		}
+	}
+	random_shuffle(For_rand,For_rand+min(4,num));
+	if(num>4)random_shuffle(For_rand+4,For_rand+num);
+	for(int i=0;i<num;i++){
+		int g=(rand()&1);
+		if(g){
+			swap(son[x][i],son[x][For_rand[i]]);
+			swap(op[x][i],op[x][For_rand[i]]);
+			swap(P[x][i],P[x][For_rand[i]]);
+		}
+	}
+}
+
+double Simulation(int x,bool tp){
+	return Getrate(tp);
+	// return (rand()%1000000)/1000000.0<=Getrate(tp)?1:0;
+}
+
+void Selection(int x,bool tp){
+	int lasx1=X1,lasy1=Y1,lasx2=X2,lasy2=Y2;
+	//x点已完全展开，即儿子点全都被访问过至少1次
+	if(isEnd()){
+		Win=Simulation(x,tp);
+		tot[x]++,win[x]+=Win;
+		return;
+	}
+	int flag=-1;
+	for(int i=0;i<(int)son[x].size();i++){
+		int to=son[x][i];
+		if(!tot[to]){flag=i;break;}//未完全展开
+	}
+	if(flag!=-1){
+		// cerr<<"@@"<<x<<" "<<son[x][flag]<<endl;
+		tp==0?update1(op[x][flag]):update2(op[x][flag]);
+		Expansion(son[x][flag],tp^1);
+		Win=Simulation(son[x][flag],tp^1);
+		tot[son[x][flag]]++,win[son[x][flag]]+=Win;
+		tot[x]++,win[x]+=Win;
+		tp==0?update1_rev(op[x][flag],lasx1,lasy1):update2_rev(op[x][flag],lasx2,lasy2);
+		return;
+	}
+	double MinMax=-1e9;
+	int G=0;
+	for(int i=0;i<(int)son[x].size();i++){
+		int to=son[x][i];
+		// double UCT=1.0*win[to]/tot[to]+c*sqrt(1.0*log2(tot[x])/tot[to]);
+		double UCT=1.0*win[to]/tot[to]+c*P[x][i]*sqrt(1.0*log2(tot[x])/(tot[to]+1));
+		if(tp==0&&UCT>MinMax)MinMax=UCT,G=i;
+		if(tp==1&&UCT<MinMax)MinMax=UCT,G=i;
+	}
+	tp==0?update1(op[x][G]):update2(op[x][G]);
+	Selection(son[x][G],tp^1);
+	tot[x]++,win[x]+=Win;
+	tp==0?update1_rev(op[x][G],lasx1,lasy1):update2_rev(op[x][G],lasx2,lasy2);
+}
+pp2 MCTS(){
+	Expansion(1,0);
+	for(int i=1;i<=1000;i++)Selection(1,0);
+	double MinMax=-1e9;
+	int G=0;
+	for(int i=0;i<(int)son[1].size();i++){
+		int to=son[1][i];
+		// cerr<<"@@@"<<1.0*win[to]/tot[to]<<" "<<P[1][i]<<" "<<1.0*win[to]/tot[to]+c*P[1][i]*sqrt(1.0*log2(tot[1])/(tot[to]+1))<<endl;
+		// double UCT=1.0*win[to]/tot[to]+c*sqrt(1.0*log2(tot[1])/tot[to]);
+		// double UCT=1.0*win[to]/tot[to]+c*P[1][i]*sqrt(1.0*tot[1]/(tot[to]+1));
+		double UCT=1.0*win[to]/tot[to];
+		if(UCT>MinMax)MinMax=UCT,G=i;
+	}
+	pp2 ans=op[1][G];
+
+	for(int i=0;i<Maxn;i++)son[i].clear(),op[i].clear(),P[i].clear(),win[i]=tot[i]=0;
+	cnt=1;
+	return ans;
 }
 pp2 action(pp2 loc) {
+	
 	cycle++;
 	update2(loc);
 
 	pp2 ans;
 
-	// bool flag=0;
-	// if(cycle==1&&ai_side==0){
-	// 	ans=pp2(0,pp(8,5)),flag=1;
-	// }
-	// if(flag){
-	// 	update1(ans);
-	// 	return ans;
-	// }
-
 	GetDis();
 	cmpquick=(Dis1<Dis2?1:0);
 	Blocknum1_0=Blocknum1,Blocknum2_0=Blocknum2;
 
+	ans=MCTS();
 	
-	MiniMaxSearch(0,Blocknum1?3:1,inf+1,ans);
 	// cerr<<"!!!"<<ans.fi<<" "<<ans.se.fi<<" "<<ans.se.se<<endl;
 	update1(ans);
 	// usleep(300000);
