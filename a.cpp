@@ -1,4 +1,4 @@
-// 4、6全胜 对5胜率极大 尽量和对面贴贴就能赢
+// Minimax
 #include "AIController.h"
 #include <utility>
 #include<bits/stdc++.h>
@@ -9,7 +9,7 @@ using namespace std;
 #define fi first
 #define se second
 extern int ai_side;
-std::string ai_name = "zhongzero";
+std::string ai_name = "zhongzero";//请和我贴贴
 const int inf=0x3f3f3f3f;
 
 //init function is called once at the beginning
@@ -196,6 +196,7 @@ void GetDis(){
 		BFS(X2,Y2);
 		for(int i=0;i<=8;i++)Dis2=min(Dis2,dis[8][i]);
 		for(int i=0;i<=8;i++)if(Dis2==dis[8][i])P2=max(P2,p[8][i]);
+		Dis3=dis[X1][Y1];
 	}
 	else {
 		BFS(X1,Y1);

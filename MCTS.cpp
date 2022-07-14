@@ -2,7 +2,7 @@
 #include <utility>
 #include<bits/stdc++.h>
 #include <unistd.h>
-#define Maxn 14000010
+#define Maxn 2000010
 using namespace std;
 #define pp pair<int,int>
 #define pp2 pair<int,pp>
@@ -21,6 +21,10 @@ int X1,Y1,X2,Y2;//(X1,Y1) 我的位置；(X2,Y2) 对方的位置
 int cycle;
 int Blocknum1_0,Blocknum2_0;
 int cycle_0;
+int Dis1_0,Dis2_0,Dis3_0;
+int X1_0,Y1_0,X2_0,Y2_0;
+bool cross_half2;
+pp2 preBlock;
 void init() {
 	/* Your code here */
 	for(int i=0;i<=8;i++)for(int j=0;j<8;j++)H1[i][j]=0;
@@ -30,6 +34,8 @@ void init() {
 	if(ai_side==0)X1=8,Y1=4,X2=0,Y2=4;
 	else X1=0,Y1=4,X2=8,Y2=4;
 	cycle=0;
+	preBlock=pp2(-1,pp(0,0));
+	cross_half2=0;
 }
 
 /* The following notation is based on player 0's perspective
@@ -111,45 +117,45 @@ double dis[9][9];
 bool vis[9][9];
 int p[9][9];
 queue<pp>W;
-// void BFS(int x0,int y0){
-// 	for(int i=0;i<9;i++)for(int j=0;j<9;j++)dis[i][j]=inf;
-// 	dis[x0][y0]=0;
-// 	W.push(pp(x0,y0));
-// 	while(!W.empty()){
-// 		int x=W.front().fi,y=W.front().se;
-// 		W.pop();
-// 		if(x-1>=0&&dis[x-1][y]==inf&&!H2[x-1][y])dis[x-1][y]=dis[x][y]+1,W.push(pp(x-1,y));
-// 		if(x+1<=8&&dis[x+1][y]==inf&&!H2[x][y])dis[x+1][y]=dis[x][y]+1,W.push(pp(x+1,y));
-// 		if(y-1>=0&&dis[x][y-1]==inf&&!H1[x][y-1])dis[x][y-1]=dis[x][y]+1,W.push(pp(x,y-1));
-// 		if(y+1<=8&&dis[x][y+1]==inf&&!H1[x][y])dis[x][y+1]=dis[x][y]+1,W.push(pp(x,y+1));
-// 	}
-// }
 void BFS(int x0,int y0){
 	for(int i=0;i<9;i++)for(int j=0;j<9;j++)dis[i][j]=inf;
-	memset(p,0,sizeof p);
-	dis[x0][y0]=0,p[x0][y0]=1;
+	dis[x0][y0]=0;
 	W.push(pp(x0,y0));
 	while(!W.empty()){
 		int x=W.front().fi,y=W.front().se;
 		W.pop();
-		if(x-1>=0&&!H2[x-1][y]){
-			if(dis[x-1][y]==inf)dis[x-1][y]=dis[x][y]+1,W.push(pp(x-1,y));
-			if(dis[x-1][y]==dis[x][y]+1)p[x-1][y]+=p[x][y];
-		}
-		if(x+1<=8&&!H2[x][y]){
-			if(dis[x+1][y]==inf)dis[x+1][y]=dis[x][y]+1,W.push(pp(x+1,y));
-			if(dis[x+1][y]==dis[x][y]+1)p[x+1][y]+=p[x][y];
-		}
-		if(y-1>=0&&!H1[x][y-1]){
-			if(dis[x][y-1]==inf)dis[x][y-1]=dis[x][y]+1,W.push(pp(x,y-1));
-			if(dis[x][y-1]==dis[x][y]+1)p[x][y-1]+=p[x][y];
-		}
-		if(y+1<=8&&!H1[x][y]){
-			if(dis[x][y+1]==inf)dis[x][y+1]=dis[x][y]+1,W.push(pp(x,y+1));
-			if(dis[x][y+1]==dis[x][y]+1)p[x][y+1]+=p[x][y];
-		}
+		if(x-1>=0&&dis[x-1][y]==inf&&!H2[x-1][y])dis[x-1][y]=dis[x][y]+1,W.push(pp(x-1,y));
+		if(x+1<=8&&dis[x+1][y]==inf&&!H2[x][y])dis[x+1][y]=dis[x][y]+1,W.push(pp(x+1,y));
+		if(y-1>=0&&dis[x][y-1]==inf&&!H1[x][y-1])dis[x][y-1]=dis[x][y]+1,W.push(pp(x,y-1));
+		if(y+1<=8&&dis[x][y+1]==inf&&!H1[x][y])dis[x][y+1]=dis[x][y]+1,W.push(pp(x,y+1));
 	}
 }
+// void BFS(int x0,int y0){
+// 	for(int i=0;i<9;i++)for(int j=0;j<9;j++)dis[i][j]=inf;
+// 	memset(p,0,sizeof p);
+// 	dis[x0][y0]=0,p[x0][y0]=1;
+// 	W.push(pp(x0,y0));
+// 	while(!W.empty()){
+// 		int x=W.front().fi,y=W.front().se;
+// 		W.pop();
+// 		if(x-1>=0&&!H2[x-1][y]){
+// 			if(dis[x-1][y]==inf)dis[x-1][y]=dis[x][y]+1,W.push(pp(x-1,y));
+// 			if(dis[x-1][y]==dis[x][y]+1)p[x-1][y]+=p[x][y];
+// 		}
+// 		if(x+1<=8&&!H2[x][y]){
+// 			if(dis[x+1][y]==inf)dis[x+1][y]=dis[x][y]+1,W.push(pp(x+1,y));
+// 			if(dis[x+1][y]==dis[x][y]+1)p[x+1][y]+=p[x][y];
+// 		}
+// 		if(y-1>=0&&!H1[x][y-1]){
+// 			if(dis[x][y-1]==inf)dis[x][y-1]=dis[x][y]+1,W.push(pp(x,y-1));
+// 			if(dis[x][y-1]==dis[x][y]+1)p[x][y-1]+=p[x][y];
+// 		}
+// 		if(y+1<=8&&!H1[x][y]){
+// 			if(dis[x][y+1]==inf)dis[x][y+1]=dis[x][y]+1,W.push(pp(x,y+1));
+// 			if(dis[x][y+1]==dis[x][y]+1)p[x][y+1]+=p[x][y];
+// 		}
+// 	}
+// }
 int calc_edge(int x,int y){
 	int G=((y==8?1:H1[x][y])+(y==0?1:H1[x][y-1])+(x==8?1:H2[x][y])+(x==0?1:H2[x-1][y]));
 	if(G==3)return 0;
@@ -165,19 +171,19 @@ void GetDis(){
 	if(ai_side==0){
 		BFS(X1,Y1);
 		for(int i=0;i<=8;i++)Dis1=min(Dis1,dis[0][i]);
-		for(int i=0;i<=8;i++)if(Dis1==dis[0][i])P1=max(P1,p[0][i]);
+		// for(int i=0;i<=8;i++)if(Dis1==dis[0][i])P1=max(P1,p[0][i]);
 		BFS(X2,Y2);
 		for(int i=0;i<=8;i++)Dis2=min(Dis2,dis[8][i]);
-		for(int i=0;i<=8;i++)if(Dis2==dis[8][i])P2=max(P2,p[8][i]);
+		// for(int i=0;i<=8;i++)if(Dis2==dis[8][i])P2=max(P2,p[8][i]);
 		Dis3=dis[X1][Y1];
 	}
 	else {
 		BFS(X1,Y1);
 		for(int i=0;i<=8;i++)Dis1=min(Dis1,dis[8][i]);
-		for(int i=0;i<=8;i++)if(Dis1==dis[8][i])P1=max(P1,p[8][i]);
+		// for(int i=0;i<=8;i++)if(Dis1==dis[8][i])P1=max(P1,p[8][i]);
 		BFS(X2,Y2);
 		for(int i=0;i<=8;i++)Dis2=min(Dis2,dis[0][i]);
-		for(int i=0;i<=8;i++)if(Dis2==dis[0][i])P2=max(P2,p[0][i]);
+		// for(int i=0;i<=8;i++)if(Dis2==dis[0][i])P2=max(P2,p[0][i]);
 		Dis3=dis[X1][Y1];
 	}
 }
@@ -188,8 +194,7 @@ void GetDis(){
 const double c=sqrt(2);
 vector<int>order[Maxn];
 int R[Maxn];
-vector<int>son[Maxn];//son[x][i]：x的第i个儿子 
-vector<double>P[Maxn];
+vector<int>son[Maxn];//son[x][i]：x的第i个儿子
 vector<pp2>op[Maxn];//op[x][i]：x进入第i个儿子进行的操作
 int dep[Maxn],sumdep[Maxn];
 int cnt=1;
@@ -200,30 +205,105 @@ double Getrate(bool tp){//evaluate
 	
 	GetDis();
 	double val=0;
-	val=Dis2-Dis1;
+	if(Dis1_0<=Dis2_0-2&&Blocknum2-Blocknum1>=3)val+=Blocknum1*2.0;
+
+	if(cycle_0<=10&&Dis3_0==1)val+=calc_edge(X2,Y2)*0.5;
+
+	if(cycle_0<=6&&Dis3_0==1)val=Dis2-Dis1*0.4;
+	else val=Dis2-Dis1;
+	// val=Dis2-Dis1;
 	if(Blocknum1_0>=1)val+=Blocknum1*0.5;
 	if(Blocknum2_0>=1)val-=Blocknum2*0.5;
 
-	if(Blocknum2_0>=4)val-=calc_edge(X1,Y1)*0.1;
-	if(Blocknum1_0>=4)val+=calc_edge(X2,Y2)*0.05;
+	if(Blocknum2_0){
+		if(cycle<=10)val+=calc_edge(X1,Y1)*0.1;
+		else val-=calc_edge(X1,Y1)*0.1;
+	}
+	if(Blocknum1_0)val+=calc_edge(X2,Y2)*0.05;
+
+	if(Blocknum2_0-Blocknum1_0>=3&&!cross_half2)val+=Blocknum1*20.0;
+
+	// if(preBlock.fi!=-1){
+	// 	int x=preBlock.se.fi,y=preBlock.se.se;
+	// 	if(preBlock.fi==1){
+	// 		val+=(H1[x-1][y]+H1[x+2][y]+H2[x-1][y]+H2[x-1][y+1]+H2[x][y]+H2[x][y+1]+H2[x+1][y]+H2[x+1][y+1])*0.05;
+	// 	}
+	// 	if(preBlock.fi==2){
+	// 		val+=(H2[x][y-1]+H2[x][y+2]+H1[x][y-1]+H1[x+1][y-1]+H1[x][y]+H1[x+1][y]+H1[x][y+1]+H1[x+1][y+1])*0.05;
+	// 	}
+	// }
+
+
+	if(Blocknum2_0>=8){
+		if(X1<=7&&H2[X1][Y1])val+=0.2*(ai_side==0?1:-1);
+		if(X1>=1&&H2[X1-1][Y1])val-=0.2*(ai_side==0?1:-1);
+		if(X1<=7&&Y1>=1&&H2[X1][Y1-1])val+=0.1*(ai_side==0?1:-1);
+		if(X1>=1&&Y1<=7&&H2[X1-1][Y1+1])val-=0.1*(ai_side==0?1:-1);
+		if(X1<=7&&Y1>=2&&H2[X1][Y1-2])val+=0.1*(ai_side==0?1:-1);
+		if(X1>=1&&Y1<=6&&H2[X1-1][Y1+2])val-=0.1*(ai_side==0?1:-1);
+		
+		if(X1<=6&&H2[X1+1][Y1])val+=0.1*(ai_side==0?1:-1);
+		if(X1>=2&&H2[X1-2][Y1])val-=0.1*(ai_side==0?1:-1);
+		if(X1<=6&&Y1>=1&&H2[X1+1][Y1-1])val+=0.05*(ai_side==0?1:-1);
+		if(X1>=2&&Y1<=7&&H2[X1-2][Y1+1])val-=0.05*(ai_side==0?1:-1);
+		if(X1<=6&&Y1>=2&&H2[X1+1][Y1-2])val+=0.05*(ai_side==0?1:-1);
+		if(X1>=2&&Y1<=6&&H2[X1-2][Y1+2])val-=0.05*(ai_side==0?1:-1);
+	}
+	// if(Blocknum1_0>=8){
+	// 	if(X2>=1&&H2[X2-1][Y2])val-=0.2*(ai_side==0?1:-1);
+	// 	if(X2<=7&&H2[X2][Y2])val+=0.2*(ai_side==0?1:-1);
+	// 	if(X2>=1&&Y2>=1&&H2[X2-1][Y2-1])val-=0.1*(ai_side==0?1:-1);
+	// 	if(X2<=7&&Y2<=7&&H2[X2][Y2+1])val+=0.1*(ai_side==0?1:-1);
+	// 	if(X2>=1&&Y2>=2&&H2[X2-1][Y2-2])val-=0.1*(ai_side==0?1:-1);
+	// 	if(X2<=7&&Y2<=6&&H2[X2][Y2+2])val+=0.1*(ai_side==0?1:-1);
+		
+	// 	if(X2>=2&&H2[X2-2][Y2])val-=0.1*(ai_side==0?1:-1);
+	// 	if(X2<=6&&H2[X2+1][Y2])val+=0.1*(ai_side==0?1:-1);
+	// 	if(X2>=2&&Y2>=1&&H2[X2-2][Y2-1])val-=0.05*(ai_side==0?1:-1);
+	// 	if(X2<=6&&Y2<=7&&H2[X2+1][Y2+1])val+=0.05*(ai_side==0?1:-1);
+	// 	if(X2>=2&&Y2>=2&&H2[X2-2][Y2-2])val-=0.05*(ai_side==0?1:-1);
+	// 	if(X2<=6&&Y2<=6&&H2[X2+1][Y2+2])val+=0.05*(ai_side==0?1:-1);
+	// }
 
 	if(cycle_0<=3){
-		if(X1<2)val-=abs(X1-2)*10;
-		if(X1>6)val-=abs(X1-6)*10;
+		if(X1<3)val-=abs(X1-3)*10;
+		if(X1>5)val-=abs(X1-5)*10;
 	}
-	if(10-Blocknum1_0<=1){
+	if(10-Blocknum1_0<=2){
 		if(ai_side==0){
 			int num=0;
-			for(int j=0;j<8;j++)num+=H2[6][j];
-			val+=num*0.3;
+			for(int j=1;j<7;j++)num+=H2[6][j];
+			val+=num*1.0;
 		}
 		else {
 			int num=0;
-			for(int j=0;j<8;j++)num+=H2[1][j];
-			val+=num*0.3;
+			for(int j=1;j<7;j++)num+=H2[1][j];
+			val+=num*1.0;
 		}
 	}
-	if(cycle_0<=10)val-=Dis3*0.2;
+	// if(3<=10-Blocknum1_0&&10-Blocknum1_0<=3){
+	// 	if(ai_side==0){
+	// 		int num=0;
+	// 		for(int j=0;j<8;j++)num+=H2[6][j];
+	// 		val-=num*0.6;
+	// 		num=0;
+	// 		for(int j=0;j<8;j++)num+=H2[7][j];
+	// 		val-=num*0.6;
+	// 	}
+	// 	else {
+	// 		int num=0;
+	// 		for(int j=0;j<8;j++)num+=H2[1][j];
+	// 		val-=num*0.6;
+	// 		num=0;
+	// 		for(int j=0;j<8;j++)num+=H2[0][j];
+	// 		val-=num*0.6;
+	// 	}
+	// }
+	
+	if(cycle_0<=6){
+		if(Dis3<=2)val+=0.5;
+	}
+	// if(cycle_0<=10)val-=Dis3*0.5;
 	if(Blocknum1_0>=3){
 		// val+=(-Dis1)*0.3;
 		val+=Dis2*0.5;
@@ -249,7 +329,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 					if(sonid==0){
 						G.se=pp(tox1,toy1);
 						update1(G);
-						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+						son[x].push_back(++cnt),op[x].push_back(G);
 						update1_rev(G,lasx1,lasy1);
 						return 1;
 					}
@@ -260,7 +340,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 						if(sonid==1){
 							G.se=pp(tox1,toy1);
 							update1(G);
-							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							son[x].push_back(++cnt),op[x].push_back(G);
 							update1_rev(G,lasx1,lasy1);
 							return 1;
 						}
@@ -271,7 +351,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 						if(sonid==2){
 							G.se=pp(tox1,toy1);
 							update1(G);
-							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							son[x].push_back(++cnt),op[x].push_back(G);
 							update1_rev(G,lasx1,lasy1);
 							return 1;
 						}
@@ -282,7 +362,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 				if(sonid==3){
 					G.se=pp(tox1,toy1);
 					update1(G);
-					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+					son[x].push_back(++cnt),op[x].push_back(G);
 					update1_rev(G,lasx1,lasy1);
 					return 1;
 				}
@@ -296,7 +376,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 					if(sonid==4){
 						G.se=pp(tox1,toy1);
 						update1(G);
-						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+						son[x].push_back(++cnt),op[x].push_back(G);
 						update1_rev(G,lasx1,lasy1);
 						return 1;
 					}
@@ -307,7 +387,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 						if(sonid==5){
 							G.se=pp(tox1,toy1);
 							update1(G);
-							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							son[x].push_back(++cnt),op[x].push_back(G);
 							update1_rev(G,lasx1,lasy1);
 							return 1;
 						}
@@ -318,7 +398,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 						if(sonid==6){
 							G.se=pp(tox1,toy1);
 							update1(G);
-							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							son[x].push_back(++cnt),op[x].push_back(G);
 							update1_rev(G,lasx1,lasy1);
 							return 1;
 						}
@@ -329,7 +409,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 				if(sonid==7){
 					G.se=pp(tox1,toy1);
 					update1(G);
-					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+					son[x].push_back(++cnt),op[x].push_back(G);
 					update1_rev(G,lasx1,lasy1);
 					return 1;
 				}
@@ -343,7 +423,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 					if(sonid==8){
 						G.se=pp(tox1,toy1);
 						update1(G);
-						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+						son[x].push_back(++cnt),op[x].push_back(G);
 						update1_rev(G,lasx1,lasy1);
 						return 1;
 					}
@@ -354,7 +434,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 						if(sonid==9){
 							G.se=pp(tox1,toy1);
 							update1(G);
-							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							son[x].push_back(++cnt),op[x].push_back(G);
 							update1_rev(G,lasx1,lasy1);
 							return 1;
 						}
@@ -365,7 +445,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 						if(sonid==10){
 							G.se=pp(tox1,toy1);
 							update1(G);
-							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							son[x].push_back(++cnt),op[x].push_back(G);
 							update1_rev(G,lasx1,lasy1);
 							return 1;
 						}
@@ -376,7 +456,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 				if(sonid==11){
 					G.se=pp(tox1,toy1);
 					update1(G);
-					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+					son[x].push_back(++cnt),op[x].push_back(G);
 					update1_rev(G,lasx1,lasy1);
 					return 1;
 				}
@@ -390,7 +470,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 					if(sonid==12){
 						G.se=pp(tox1,toy1);
 						update1(G);
-						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+						son[x].push_back(++cnt),op[x].push_back(G);
 						update1_rev(G,lasx1,lasy1);
 						return 1;
 					}
@@ -401,7 +481,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 						if(sonid==13){
 							G.se=pp(tox1,toy1);
 							update1(G);
-							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							son[x].push_back(++cnt),op[x].push_back(G);
 							update1_rev(G,lasx1,lasy1);
 							return 1;
 						}
@@ -413,7 +493,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 						if(sonid==14){
 							G.se=pp(tox1,toy1);
 							update1(G);
-							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							son[x].push_back(++cnt),op[x].push_back(G);
 							update1_rev(G,lasx1,lasy1);
 							return 1;
 						}
@@ -424,7 +504,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 				if(sonid==15){
 					G.se=pp(tox1,toy1);
 					update1(G);
-					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+					son[x].push_back(++cnt),op[x].push_back(G);
 					update1_rev(G,lasx1,lasy1);
 					return 1;
 				}
@@ -439,7 +519,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 				if(H1[i][j]||H1[i+1][j]||H3[i][j])return 0;
 				G.se=pp(i,j);
 				update1(G);
-				if(!isAllBlock())son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+				if(!isAllBlock())son[x].push_back(++cnt),op[x].push_back(G);
 				update1_rev(G,lasx1,lasy1);
 				return 1;
 			}
@@ -450,7 +530,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 				if(H2[i][j]||H2[i][j+1]||H3[i][j])return 0;
 				G.se=pp(i,j);
 				update1(G);
-				if(!isAllBlock())son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+				if(!isAllBlock())son[x].push_back(++cnt),op[x].push_back(G);
 				update1_rev(G,lasx1,lasy1);
 				return 1;
 			}
@@ -468,7 +548,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 					if(sonid==0){
 						G.se=pp(tox2,toy2);
 						update2(G);
-						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+						son[x].push_back(++cnt),op[x].push_back(G);
 						update2_rev(G,lasx2,lasy2);
 						return 1;
 					}
@@ -479,7 +559,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 						if(sonid==1){
 							G.se=pp(tox2,toy2);
 							update2(G);
-							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							son[x].push_back(++cnt),op[x].push_back(G);
 							update2_rev(G,lasx2,lasy2);
 							return 1;
 						}
@@ -491,7 +571,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 						if(sonid==2){
 							G.se=pp(tox2,toy2);
 							update2(G);
-							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							son[x].push_back(++cnt),op[x].push_back(G);
 							update2_rev(G,lasx2,lasy2);
 							return 1;
 						}
@@ -502,7 +582,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 				if(sonid==3){
 					G.se=pp(tox2,toy2);
 					update2(G);
-					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+					son[x].push_back(++cnt),op[x].push_back(G);
 					update2_rev(G,lasx2,lasy2);
 					return 1;
 				}
@@ -516,7 +596,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 					if(sonid==4){
 						G.se=pp(tox2,toy2);
 						update2(G);
-						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+						son[x].push_back(++cnt),op[x].push_back(G);
 						update2_rev(G,lasx2,lasy2);
 						return 1;
 					}
@@ -527,7 +607,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 						if(sonid==5){
 							G.se=pp(tox2,toy2);
 							update2(G);
-							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							son[x].push_back(++cnt),op[x].push_back(G);
 							update2_rev(G,lasx2,lasy2);
 							return 1;
 						}
@@ -539,7 +619,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 						if(sonid==6){
 							G.se=pp(tox2,toy2);
 							update2(G);
-							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							son[x].push_back(++cnt),op[x].push_back(G);
 							update2_rev(G,lasx2,lasy2);
 							return 1;
 						}
@@ -550,7 +630,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 				if(sonid==7){
 					G.se=pp(tox2,toy2);
 					update2(G);
-					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+					son[x].push_back(++cnt),op[x].push_back(G);
 					update2_rev(G,lasx2,lasy2);
 					return 1;
 				}
@@ -564,7 +644,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 					if(sonid==8){
 						G.se=pp(tox2,toy2);
 						update2(G);
-						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+						son[x].push_back(++cnt),op[x].push_back(G);
 						update2_rev(G,lasx2,lasy2);
 						return 1;
 					}
@@ -575,7 +655,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 						if(sonid==9){
 							G.se=pp(tox2,toy2);
 							update2(G);
-							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							son[x].push_back(++cnt),op[x].push_back(G);
 							update2_rev(G,lasx2,lasy2);
 							return 1;
 						}
@@ -587,7 +667,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 						if(sonid==10){
 							G.se=pp(tox2,toy2);
 							update2(G);
-							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							son[x].push_back(++cnt),op[x].push_back(G);
 							update2_rev(G,lasx2,lasy2);
 							return 1;
 						}
@@ -598,7 +678,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 				if(sonid==11){
 					G.se=pp(tox2,toy2);
 					update2(G);
-					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+					son[x].push_back(++cnt),op[x].push_back(G);
 					update2_rev(G,lasx2,lasy2);
 					return 1;
 				}
@@ -612,7 +692,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 					if(sonid==12){
 						G.se=pp(tox2,toy2);
 						update2(G);
-						son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+						son[x].push_back(++cnt),op[x].push_back(G);
 						update2_rev(G,lasx2,lasy2);
 						return 1;
 					}
@@ -623,7 +703,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 						if(sonid==13){
 							G.se=pp(tox2,toy2);
 							update2(G);
-							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							son[x].push_back(++cnt),op[x].push_back(G);
 							update2_rev(G,lasx2,lasy2);
 							return 1;
 						}
@@ -635,7 +715,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 						if(sonid==14){
 							G.se=pp(tox2,toy2);
 							update2(G);
-							son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+							son[x].push_back(++cnt),op[x].push_back(G);
 							update2_rev(G,lasx2,lasy2);
 							return 1;
 						}
@@ -646,7 +726,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 				if(sonid==15){
 					G.se=pp(tox2,toy2);
 					update2(G);
-					son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+					son[x].push_back(++cnt),op[x].push_back(G);
 					update2_rev(G,lasx2,lasy2);
 					return 1;
 				}
@@ -661,7 +741,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 				if(H1[i][j]||H1[i+1][j]||H3[i][j])return 0;
 				G.se=pp(i,j);
 				update2(G);
-				if(!isAllBlock())son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+				if(!isAllBlock())son[x].push_back(++cnt),op[x].push_back(G);
 				update2_rev(G,lasx2,lasy2);
 				return 1;
 			}
@@ -672,7 +752,7 @@ bool Is_Expansion(int x,int sonid,bool tp){
 				if(H2[i][j]||H2[i][j+1]||H3[i][j])return 0;
 				G.se=pp(i,j);
 				update2(G);
-				if(!isAllBlock())son[x].push_back(++cnt),op[x].push_back(G),P[x].push_back(Getrate(tp));
+				if(!isAllBlock())son[x].push_back(++cnt),op[x].push_back(G);
 				update2_rev(G,lasx2,lasy2);
 				return 1;
 			}
@@ -758,7 +838,7 @@ pp2 MCTS(){
 
 	for(int i=1;i<=10;i++)cerr<<"sumdep["<<i<<"]="<<sumdep[i]<<endl;
 
-	for(int i=0;i<Maxn;i++)order[i].clear(),son[i].clear(),op[i].clear(),P[i].clear(),win[i]=tot[i]=0,R[i]=0;
+	for(int i=0;i<Maxn;i++)order[i].clear(),son[i].clear(),op[i].clear(),win[i]=tot[i]=0,R[i]=0;
 	cnt=1;
 	memset(dep,0,sizeof dep);
 	memset(sumdep,0,sizeof sumdep);
@@ -800,7 +880,7 @@ double Getval(bool tp){//evaluate
 				val+=num*0.3;
 			}
 		}
-		if(cycle<=10)val-=Dis3*0.5;
+		if(cycle<=10)val-=Dis3*0.2;
 		if(Blocknum1_0>=3){
 			// val+=(-Dis1)*0.3;
 			// val+=Dis2*0.5;
@@ -1270,6 +1350,14 @@ pp2 action(pp2 loc) {
 	cycle_0=cycle;
 	cmpquick=(Dis1<Dis2?1:0);
 	Blocknum1_0=Blocknum1,Blocknum2_0=Blocknum2;
+	Dis1_0=Dis1,Dis2_0=Dis2,Dis3_0=Dis3;
+	X1_0=X2,Y1_0=Y1,X2_0=X2,Y2_0=Y2;
+	if(ai_side==0){
+		if(X2>=5)cross_half2=1;
+	}
+	else {
+		if(X2<=4)cross_half2=1;
+	}
 
 	pp2 ans;
 
@@ -1278,6 +1366,7 @@ pp2 action(pp2 loc) {
 	
 	// cerr<<"!!!"<<ans.fi<<" "<<ans.se.fi<<" "<<ans.se.se<<endl;
 	update1(ans);
+	if(ans.fi==1||ans.fi==2)preBlock=ans;
 	// usleep(300000);
 	return ans;
 }
