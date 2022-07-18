@@ -1,3 +1,4 @@
+//蒙特卡洛
 #include "AIController.h"
 #include <utility>
 #include<bits/stdc++.h>
@@ -234,35 +235,29 @@ double Getrate(bool tp){//evaluate
 	// }
 
 
-	if(Blocknum2_0>=8){
-		if(X1<=7&&H2[X1][Y1])val+=0.2*(ai_side==0?1:-1);
-		if(X1>=1&&H2[X1-1][Y1])val-=0.2*(ai_side==0?1:-1);
-		if(X1<=7&&Y1>=1&&H2[X1][Y1-1])val+=0.1*(ai_side==0?1:-1);
-		if(X1>=1&&Y1<=7&&H2[X1-1][Y1+1])val-=0.1*(ai_side==0?1:-1);
-		if(X1<=7&&Y1>=2&&H2[X1][Y1-2])val+=0.1*(ai_side==0?1:-1);
-		if(X1>=1&&Y1<=6&&H2[X1-1][Y1+2])val-=0.1*(ai_side==0?1:-1);
-		
-		if(X1<=6&&H2[X1+1][Y1])val+=0.1*(ai_side==0?1:-1);
-		if(X1>=2&&H2[X1-2][Y1])val-=0.1*(ai_side==0?1:-1);
-		if(X1<=6&&Y1>=1&&H2[X1+1][Y1-1])val+=0.05*(ai_side==0?1:-1);
-		if(X1>=2&&Y1<=7&&H2[X1-2][Y1+1])val-=0.05*(ai_side==0?1:-1);
-		if(X1<=6&&Y1>=2&&H2[X1+1][Y1-2])val+=0.05*(ai_side==0?1:-1);
-		if(X1>=2&&Y1<=6&&H2[X1-2][Y1+2])val-=0.05*(ai_side==0?1:-1);
-	}
+	// if(Blocknum2_0>=8){
+	// 	if(X1<=7&&H2[X1][Y1])val+=0.2*(ai_side==0?1:-1);
+	// 	if(X1>=1&&H2[X1-1][Y1])val-=0.2*(ai_side==0?1:-1);
+	// 	if(X1<=7&&Y1>=1&&H2[X1][Y1-1])val+=0.1*(ai_side==0?1:-1);
+	// 	if(X1<=7&&Y1>=1&&H2[X1-1][Y1-1])val-=0.1*(ai_side==0?1:-1);
+	// 	if(X1>=1&&Y1<=7&&H2[X1][Y1+1])val+=0.1*(ai_side==0?1:-1);
+	// 	if(X1>=1&&Y1<=7&&H2[X1-1][Y1+1])val-=0.1*(ai_side==0?1:-1);
+	// 	if(X1<=7&&Y1>=2&&H2[X1][Y1-2])val+=0.1*(ai_side==0?1:-1);
+	// 	if(X1<=7&&Y1>=2&&H2[X1-1][Y1-2])val-=0.1*(ai_side==0?1:-1);
+	// 	if(X1>=1&&Y1<=6&&H2[X1][Y1+2])val+=0.1*(ai_side==0?1:-1);
+	// 	if(X1>=1&&Y1<=6&&H2[X1-1][Y1+2])val-=0.1*(ai_side==0?1:-1);
+	// }
 	// if(Blocknum1_0>=8){
-	// 	if(X2>=1&&H2[X2-1][Y2])val-=0.2*(ai_side==0?1:-1);
 	// 	if(X2<=7&&H2[X2][Y2])val+=0.2*(ai_side==0?1:-1);
-	// 	if(X2>=1&&Y2>=1&&H2[X2-1][Y2-1])val-=0.1*(ai_side==0?1:-1);
-	// 	if(X2<=7&&Y2<=7&&H2[X2][Y2+1])val+=0.1*(ai_side==0?1:-1);
-	// 	if(X2>=1&&Y2>=2&&H2[X2-1][Y2-2])val-=0.1*(ai_side==0?1:-1);
-	// 	if(X2<=7&&Y2<=6&&H2[X2][Y2+2])val+=0.1*(ai_side==0?1:-1);
-		
-	// 	if(X2>=2&&H2[X2-2][Y2])val-=0.1*(ai_side==0?1:-1);
-	// 	if(X2<=6&&H2[X2+1][Y2])val+=0.1*(ai_side==0?1:-1);
-	// 	if(X2>=2&&Y2>=1&&H2[X2-2][Y2-1])val-=0.05*(ai_side==0?1:-1);
-	// 	if(X2<=6&&Y2<=7&&H2[X2+1][Y2+1])val+=0.05*(ai_side==0?1:-1);
-	// 	if(X2>=2&&Y2>=2&&H2[X2-2][Y2-2])val-=0.05*(ai_side==0?1:-1);
-	// 	if(X2<=6&&Y2<=6&&H2[X2+1][Y2+2])val+=0.05*(ai_side==0?1:-1);
+	// 	if(X2>=1&&H2[X2-1][Y2])val-=0.2*(ai_side==0?1:-1);
+	// 	if(X2<=7&&Y2>=1&&H2[X2][Y2-1])val+=0.1*(ai_side==0?1:-1);
+	// 	if(X2<=7&&Y2>=1&&H2[X2-1][Y2-1])val-=0.1*(ai_side==0?1:-1);
+	// 	if(X2>=1&&Y2<=7&&H2[X2][Y2+1])val+=0.1*(ai_side==0?1:-1);
+	// 	if(X2>=1&&Y2<=7&&H2[X2-1][Y2+1])val-=0.1*(ai_side==0?1:-1);
+	// 	if(X2<=7&&Y2>=2&&H2[X2][Y2-2])val+=0.1*(ai_side==0?1:-1);
+	// 	if(X2<=7&&Y2>=2&&H2[X2-1][Y2-2])val-=0.1*(ai_side==0?1:-1);
+	// 	if(X2>=1&&Y2<=6&&H2[X2][Y2+2])val+=0.1*(ai_side==0?1:-1);
+	// 	if(X2>=1&&Y2<=6&&H2[X2-1][Y2+2])val-=0.1*(ai_side==0?1:-1);
 	// }
 
 	if(cycle_0<=3){
@@ -281,7 +276,7 @@ double Getrate(bool tp){//evaluate
 			val+=num*1.0;
 		}
 	}
-	// if(3<=10-Blocknum1_0&&10-Blocknum1_0<=3){
+	// if(3<=10-Blocknum1_0&&10-Blocknum1_0<=4){
 	// 	if(ai_side==0){
 	// 		int num=0;
 	// 		for(int j=0;j<8;j++)num+=H2[6][j];
@@ -299,6 +294,27 @@ double Getrate(bool tp){//evaluate
 	// 		val-=num*0.6;
 	// 	}
 	// }
+	// if(10-Blocknum1_0==3){
+	// 	if(!cross_half2){
+	// 		val+=calc_edge(X2,Y2)*100.0;
+	// 		if(ai_side==0){
+	// 			if(!H2[6][1]){
+	// 				if(Y2<=7)val+=H1[X2][Y2]*1000.0;
+	// 			}
+	// 			else {
+	// 				if(Y2>=1)val+=H1[X2][Y2-1]*1000.0;
+	// 			}
+	// 		}
+	// 		else {
+	// 			if(!H2[1][1]){
+	// 				if(Y2<=7)val+=H1[X2][Y2]*1000.0;
+	// 			}
+	// 			else {
+	// 				if(Y2>=1)val+=H1[X2][Y2-1]*1000.0;
+	// 			}
+	// 		}
+	// 	}
+	// }
 	
 	if(cycle_0<=6){
 		if(Dis3<=2)val+=0.5;
@@ -310,7 +326,7 @@ double Getrate(bool tp){//evaluate
 		// if(cmpquick)val+=(-Dis1)*0.3;
 		// else val+=Dis2*0.3;
 	}
-	return val/6+isEnd()*100.0;
+	return val*5.0+isEnd()*100.0;
 }
 int For_rand[300];
 
@@ -828,10 +844,8 @@ pp2 MCTS(){
 	int G=0;
 	for(int i=0;i<(int)son[1].size();i++){
 		int to=son[1][i];
-		// cerr<<"@@@"<<1.0*win[to]/tot[to]<<" "<<P[1][i]<<" "<<1.0*win[to]/tot[to]+c*P[1][i]*sqrt(1.0*log2(tot[1])/(tot[to]+1))<<endl;
-		// double UCT=1.0*win[to]/tot[to]+c*sqrt(1.0*log2(tot[1])/tot[to]);
-		// double UCT=1.0*win[to]/tot[to]+c*sqrt(1.0*log2(tot[1])/(tot[to]+1));
 		double UCT=1.0*win[to]/tot[to];
+		// double UCT=tot[to];
 		if(UCT>MinMax)MinMax=UCT,G=i;
 	}
 	pp2 ans=op[1][G];
@@ -1353,7 +1367,7 @@ pp2 action(pp2 loc) {
 	Dis1_0=Dis1,Dis2_0=Dis2,Dis3_0=Dis3;
 	X1_0=X2,Y1_0=Y1,X2_0=X2,Y2_0=Y2;
 	if(ai_side==0){
-		if(X2>=5)cross_half2=1;
+		if(X2>=4)cross_half2=1;
 	}
 	else {
 		if(X2<=4)cross_half2=1;

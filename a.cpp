@@ -9,7 +9,7 @@ using namespace std;
 #define fi first
 #define se second
 extern int ai_side;
-std::string ai_name = "zhongzero";//请和我贴贴
+std::string ai_name = "zhongzero";
 const int inf=0x3f3f3f3f;
 
 //init function is called once at the beginning
@@ -205,7 +205,6 @@ void GetDis(){
 		BFS(X2,Y2);
 		for(int i=0;i<=8;i++)Dis2=min(Dis2,dis[0][i]);
 		for(int i=0;i<=8;i++)if(Dis2==dis[0][i])P2=max(P2,p[0][i]);
-
 		Dis3=dis[X1][Y1];
 	}
 }
@@ -219,7 +218,7 @@ double Getval(bool tp){//evaluate
 		val=(Dis2-Dis1);
 		if(Blocknum1_0>=1)val+=Blocknum1*0.5;
 		if(Blocknum2_0>=1)val-=Blocknum2*0.5;
-		// if(Blocknum1_0>=4&&Blocknum2_0>=4&&Blocknum2_0-Blocknum1_0>=2)val+=Blocknum1*0.2;
+		// if(Blocknum1_0>=4&&Blocknum2_0>=4&&Blocknum2_0-Blocknum1_0>=3)val+=Blocknum1*4.0;
 
 		if(Blocknum2_0)val-=calc_edge(X1,Y1)*0.1;
 		if(Blocknum1_0)val+=calc_edge(X2,Y2)*0.05;
@@ -242,7 +241,7 @@ double Getval(bool tp){//evaluate
 				val+=num*0.3;
 			}
 		}
-		if(cycle<=10)val-=Dis3*0.3;
+		if(cycle<=10)val-=Dis3*0.5;
 		if(Blocknum1_0>=3){
 			// val+=(-Dis1)*0.3;
 			val+=Dis2*0.5;
